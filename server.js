@@ -1,23 +1,26 @@
-var express = require('express');
-var app = express();
+ var express = require("express");
+ var app = express();
 
-// set the port of our application
-// process.env.PORT lets the port be set by Heroku
-var port = process.env.PORT || 8080;
+ var moment = require("moment");
+ /* serves main page */
+ app.get("/", function(req, res) {
+    res.sendFile(__dirname + 'index.html')
+ });
 
-// set the view engine to ejs
-app.set('view engine', 'ejs');
 
-// make express look in the public directory for assets (css/js/img)
-app.use(express.static(__dirname + '/public'));
-
-// set the home page route
-app.get('/', function(req, res) {
-
-    // ejs render automatically looks in the views folder
-    res.render('index');
-});
-
-app.listen(port, function() {
-    console.log('Our app is running on http://localhost:' + port);
-});
+app.get('/:query', function(req, res) {
+        var date = req.params.query;
+		res.setHeader('Content-Type', 'application/json');
+		if(!isNaN(parseInt(date))){
+			 res.send({"unix": parseInt(date), "natural": moment.unix(date).format("MMMM D, YYYY")});
+		} else if (moment(date, "MMMM D, YYYY").isValid()){
+			 res.send({"unix":parseInt(moment.unix(moment(date, "MMMM D, YYYY").unix()).format("X")), "natural": date});
+		}
+		else {
+			res.send({"unix":null,"natural":null});
+		}
+		});
+ var port = process.env.PORT || 8080;
+ app.listen(port, function() {
+   console.log("Listening on " + port);
+ });
